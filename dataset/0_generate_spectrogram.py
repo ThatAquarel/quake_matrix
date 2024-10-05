@@ -25,10 +25,28 @@ def get_sampling_rate(series):
     return 1 / np.mean(series[1:] - series[:-1])
 
 
+def data_parse(csv_data):
+    try:
+        # lunar data headers
+        t = np.array(csv_data["time_rel(sec)"])
+        v = np.array(csv_data["velocity(m/s)"])
+        default_sr = 6.625  # Hz
+    except KeyError:
+        # mars data headers
+        t = np.array(csv_data["rel_time(sec)"])
+        v = np.array(csv_data["velocity(c/s)"])
+        default_sr = 20.00  # Hz
+
+    sr = get_sampling_rate(t)
+    if not np.isclose(sr, default_sr):
+        raise ValueError(f"sr {sr} mistmatch with default {default_sr}")
+
+    return t, v, sr
+
+
 def process(
     data_dir,
     preprocess_dir,
-    default_sr=6.625,
     lower_freq=0.0,
     upper_freq=1.5,
 ):
@@ -39,18 +57,7 @@ def process(
             print(f"skipped {file_dir}")
             continue
 
-        try:
-            t = np.array(csv_data["time_rel(sec)"])
-            v = np.array(csv_data["velocity(m/s)"])
-        except KeyError:
-            t = np.array(csv_data["rel_time(sec)"])
-            v = np.array(csv_data["velocity(c/s)"])
-
-        sr = get_sampling_rate(t)
-        if not np.isclose(sr, default_sr):
-            print(f"sr {sr} mistmatch of {file_dir}")
-            continue
-
+        _, v, sr = data_parse(csv_data)
         spec_f, spec_t, sxx = scipy.signal.spectrogram(v, sr)
 
         mask = (spec_f > lower_freq) & (spec_f < upper_freq)
