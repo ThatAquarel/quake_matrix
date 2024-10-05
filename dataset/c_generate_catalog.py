@@ -18,7 +18,7 @@ def process(pre_catalog, catalog):
     c = pd.read_csv(pre_catalog)
 
     if "lunar" in pre_catalog:
-        c.drop(c[c["evid"] == "evid00029"].index)
+        c = c.drop(c[c["evid"] == "evid00029"].index)
 
         c["filename"] = c["filename"] + ".csv"
     else:
