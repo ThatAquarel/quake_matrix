@@ -7,20 +7,19 @@ import scipy.signal
 
 from tqdm import tqdm
 
+DATA_DIR = "./data/data/"
+PREPROCESS_DIR = "./dataset/data/"
+
 
 def recursive_files(dir, ext_filter=".csv"):
-    for i in os.listdir(dir):
-        current_path = os.path.join(dir, i)
+    # recursively exlore directory
+    for root, _, files in os.walk(dir):
+        for file in files:
 
-        # directory: recursively explore files within
-        if os.path.isdir(current_path):
-            for j in recursive_files(current_path):
-                yield j
-
-        # filter for wanted extensions
-        _, extension = os.path.splitext(i)
-        if extension == ext_filter:
-            yield current_path
+            # filter for extension
+            _, extension = os.path.splitext(file)
+            if extension == ext_filter:
+                yield os.path.join(root, file)
 
 
 def get_sampling_rate(series):
@@ -87,8 +86,8 @@ def process(
 
 
 def main(
-    data_dir="./data/data/",
-    preprocess_dir="./dataset/data/",
+    data_dir=DATA_DIR,
+    preprocess_dir=PREPROCESS_DIR,
 ):
     # iterate through available datasets
     # and preprocess data for training and testing
