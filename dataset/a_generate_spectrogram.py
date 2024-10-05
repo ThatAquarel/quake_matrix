@@ -83,7 +83,7 @@ def process(
             os.makedirs(save_path)
 
         # save frequency, time and spectrogram data
-        np.savez(f"{save_file}.npz", spec_f, spec_t, sxx)
+        np.savez(f"{save_file}.npz", spec_f=spec_f, spec_t=spec_t, sxx=sxx)
 
 
 def main(
