@@ -102,42 +102,78 @@ class QuakeDatasetVAE(nn_data.Dataset):
         return self.indices.size(0)
 
     def __getitem__(self, idx):
-        return self.get_sxx(idx).flatten()
+        sxx = self.get_sxx(idx)
+        return sxx.reshape((1, *sxx.shape))
 
 
 class QuakeVAE(nn.Module):
-    def __init__(self, input_dim, latent_dim, inner_enc):
+    def __init__(self, window_size, latent_dim=4):
         super(QuakeVAE, self).__init__()
 
-        # encoder layers
-        self.f1_enc = nn.Linear(input_dim, inner_enc)
-        self.f2_mu = nn.Linear(inner_enc, latent_dim)
-        self.f2_logvar = nn.Linear(inner_enc, latent_dim)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(
+                1, 32, kernel_size=4, stride=2, padding=1
+            ),  # (B, 32, img_size/2, img_size/2)
+            nn.ReLU(),
+            nn.Conv2d(
+                32, 64, kernel_size=4, stride=2, padding=1
+            ),  # (B, 64, img_size/4, img_size/4)
+            nn.ReLU(),
+            nn.Conv2d(
+                64, 128, kernel_size=4, stride=2, padding=1
+            ),  # (B, 128, img_size/8, img_size/8)
+            nn.ReLU(),
+            nn.Flatten(),
+        )
 
-        # decoder layers
-        self.fc3 = nn.Linear(latent_dim, inner_enc)
-        self.fc4 = nn.Linear(inner_enc, input_dim)
+        # Calculate the output size after convolutions for fully connected layers
+        conv_img_size = np.array(window_size) // 8
+        conv_output_size = np.multiply.reduce(conv_img_size) * 128
+
+        # Latent space representation
+        self.fc_mu = nn.Linear(conv_output_size, latent_dim)
+        self.fc_logvar = nn.Linear(conv_output_size, latent_dim)
+
+        # Fully connected layer to map latent space to decoded output
+        self.fc_decode = nn.Linear(latent_dim, conv_output_size)
+
+        # Define the Decoder
+        self.decoder = nn.Sequential(
+            nn.Unflatten(1, (128, int(conv_img_size[0]), int(conv_img_size[1]))),
+            nn.ConvTranspose2d(
+                128, 64, kernel_size=4, stride=2, padding=1
+            ),  # (B, 64, img_size/4, img_size/4)
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                64, 32, kernel_size=4, stride=2, padding=1
+            ),  # (B, 32, img_size/2, img_size/2)
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                32, 1, kernel_size=4, stride=2, padding=1
+            ),  # (B, 1, img_size, img_size)
+            nn.Sigmoid(),  # Output in range [0, 1] for normalized images
+        )
 
     def encode(self, x):
-        # encode data into latent space
-        h1 = F.relu(self.f1_enc(x))
-        return self.f2_mu(h1), self.f2_logvar(h1)
+        h = self.encoder(x)
+        mu = self.fc_mu(h)
+        logvar = self.fc_logvar(h)
+        return mu, logvar
 
     def reparameterize(self, mu, logvar):
-        # random sample in latent space distribution
-        stdev = torch.exp(0.5 * logvar)
-        epsilon = torch.randn_like(stdev)
-        return mu + epsilon * stdev
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return mu + eps * std  # Reparameterization trick
 
     def decode(self, z):
-        # decode data from latent space
-        h3 = F.relu(self.fc3(z))
-        return self.fc4(h3)
+        h = self.fc_decode(z)
+        return self.decoder(h)
 
     def forward(self, x):
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return self.decode(z), mu, logvar
+        recon_x = self.decode(z)
+        return recon_x, mu, logvar
 
 
 def loss_function(x_gen, x, mu, logvar):
@@ -147,14 +183,14 @@ def loss_function(x_gen, x, mu, logvar):
 
 
 def main(
-    lr=1e-4,
-    epochs=1000,
-    batch_size=32,
+    lr=1e-3,
+    epochs=256,
+    batch_size=4,
 ):
     dataset = QuakeDatasetVAE(lunar=True, debug=False)
     dataloader = nn_data.DataLoader(dataset, batch_size=batch_size)
 
-    model = QuakeVAE(dataset.get_window_size_flat(), 512, 1024)
+    model = QuakeVAE(dataset.get_window_size())
     optimizer = optim.Adam(model.parameters(), lr)
 
     for epoch in range(epochs):
@@ -172,7 +208,7 @@ def main(
 
     model.eval()
     with torch.no_grad():
-        z = torch.randn(10, 512)
+        z = torch.randn(10, 4)
         sxx = model.decode(z)
         sxx = sxx.reshape((10, *dataset.get_window_size())).cpu()
 

@@ -53,8 +53,8 @@ def data_parse(csv_data):
 def process(
     data_dir,
     preprocess_dir,
-    lower_freq=0.0,
-    upper_freq=1.5,
+    # lower_freq=0.0,
+    # upper_freq=1.5,
 ):
     for file_dir in tqdm(recursive_files(data_dir)):
         # read desired csv with seismic data
@@ -71,7 +71,8 @@ def process(
 
         # select target frequencies to only useful range
         # bounded by lower_freq and upper_freq
-        mask = (spec_f > lower_freq) & (spec_f < upper_freq)
+        # mask = (spec_f > lower_freq) & (spec_f < upper_freq)
+        mask = np.arange(64)
         spec_f, sxx = spec_f[mask], sxx[mask, :]
 
         # create dataset directory if does not exist
