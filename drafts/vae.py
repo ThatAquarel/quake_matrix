@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Parameters
-latent_dim = 2
+latent_dim = 100
 input_dim = 100  # Length of the sine wave
 learning_rate = 1e-3
 epochs = 1000
