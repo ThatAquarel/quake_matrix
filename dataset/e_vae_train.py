@@ -8,9 +8,10 @@ import numpy as np
 import pandas as pd
 
 import a_generate_spectrogram as a
+import c_generate_catalog as c
 
 
-class QuakeDataset(nn_data.Dataset):
+class QuakeDatasetVAE(nn_data.Dataset):
     def __init__(self, train=True, lunar=True) -> None:
         super().__init__()
 
@@ -22,17 +23,26 @@ class QuakeDataset(nn_data.Dataset):
 
     def load_catalog(
         self,
-        catalog_lunar="lunar/training/catalogs/apollo12_catalog_GradeA_final.csv",
-        catalog_mars="mars/training/catalogs/Mars_InSight_training_catalog_final.csv",
     ):
         if self.lunar:
-            catalog_dir = f"{a.DATA_DIR}{catalog_lunar}"
+            catalog_dir = c.CATALOG_LUNAR
+            file_dir = f"{a.PREPROCESS_DIR}lunar/training/S12_GradeA/"
+            file_ext = ".csv.npz"
         else:
-            catalog_dir = f"{a.DATA_DIR}{catalog_mars}"
+            catalog_dir = c.CATALOG_MARS
+            file_dir = f"{a.PREPROCESS_DIR}mars/training/"
+            file_ext = ".npz"
 
         catalog_data = pd.read_csv(catalog_dir)
 
-        pass
+        for _, row in catalog_data.iterrows():
+            filename = f"{row['filename']}{file_ext}"
+            time_rel = row["time_rel(sec)"]
+
+            d = np.load(f"{file_dir}{filename}")
+            spec_f, spec_t, sxx = d["spec_f"], d["spec_t"], d["sxx"]
+
+        ...
 
     def load_db(self):
         if self.train:
@@ -48,6 +58,10 @@ class QuakeDataset(nn_data.Dataset):
 
     def __getitem__(self, idx):
         return (self.x[idx], self.y[idx])
+
+
+input_dim = 100
+latent_dim = 2
 
 
 class QuakeVAE(nn.Module):
@@ -98,6 +112,8 @@ def main(
 ):
     model = QuakeVAE()
     optimizer = optim.Adam(model.parameters(), lr)
+
+    train_dataloader = nn_data.DataLoader(QuakeDatasetVAE(), batch_size=batch_size)
 
     for epoch in range(epochs):
         model.train()
