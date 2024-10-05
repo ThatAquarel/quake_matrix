@@ -5,6 +5,13 @@ import matplotlib.pyplot as plt
 import a_generate_spectrogram as a
 
 
+def spectrogram(t, f, sxx):
+    plt.pcolormesh(t, f, sxx)
+    plt.ylabel("Frequency [Hz]")
+    plt.xlabel("Time [sec]")
+    plt.show()
+
+
 def main():
     shown_moon = False
 
@@ -17,11 +24,7 @@ def main():
         spec_f, spec_t, sxx = d["spec_f"], d["spec_t"], d["sxx"]
 
         print(file)
-
-        plt.pcolormesh(spec_t, spec_f, sxx)
-        plt.ylabel("Frequency [Hz]")
-        plt.xlabel("Time [sec]")
-        plt.show()
+        spectrogram(spec_t, spec_f, sxx)
 
         shown_moon = True
 
