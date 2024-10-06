@@ -1,6 +1,6 @@
 
 
-<h3> Variational Autoencoders for Data Augmentation in Lunar Seismic Frequency Domain Analysis Using Convolutional Neural Networks</h3>
+# Variational Autoencoders for Data Augmentation in Lunar Seismic Frequency Domain Analysis Using Convolutional Neural Networks
 
 <hr>
 
@@ -9,17 +9,37 @@
 
 ## Authors
 
->A passionate team of college students from Montréal, Canada, who use their computers as makeshift room heaters to stay warm through the harsh Canadian winters. We're curious about the future of machine learning, and want to learn about this now ubiquitous tool.
+A passionate team of college students from Montréal, Canada, who use their computers as makeshift room heaters to stay warm through the harsh Canadian winters. We're curious about the future of machine learning, and want to learn about this now ubiquitous tool.
 
 Tian Yi Xia<sup>1</sup>, Thomas Deleuze-Bisson<sup>1</sup>, Mateo Duque<sup>1</sup></h4>
 
 <sup>1</sup>Dawson College, Montréal
 
+![Dawson College Logo](./docs/dawson.png)
+
 ## The Challenge: Seismic Detection Across the Solar System
 
-> Planetary seismology missions struggle with the power requirements necessary to send continuous seismic data back to Earth. But only a fraction of this data is scientifically useful! Instead of sending back all the data collected, what if we could program a lander to distinguish signals from noise, and send back only the data we care about? Your challenge is to write a computer program to analyze real data from the Apollo missions and the Mars InSight Lander to identify seismic quakes within the noise! -NASA Space Apps
+NASA Space Apps 2024:
+
+> Planetary seismology missions struggle with the power requirements necessary to send continuous seismic data back to Earth. But only a fraction of this data is scientifically useful! Instead of sending back all the data collected, what if we could program a lander to distinguish signals from noise, and send back only the data we care about? Your challenge is to write a computer program to analyze real data from the Apollo missions and the Mars InSight Lander to identify seismic quakes within the noise!
+
 
 ## Our Solution: VAEs and CNNs
+
+We propose **QuakeVAE**, a variational autoencoder as a dataset augmentation technique for frequency-domain lunar seismic data.
+
+<p align="center">
+  <img src="./docs/fig1.png" alt="figure 1", width="65%"/>
+</p>
+<p align="center">
+  <img src="./docs/fig2.png" alt="figure 2", width="65%"/>
+</p>
+
+We use **QuakeCNN**, a convolutional neural network, to classify over time absence and presence of seimic events.
+
+<p align="center">
+  <img src="./docs/fig3.png" alt="figure 3", width="65%"/>
+</p>
 
 ## Project Structure
 
@@ -101,6 +121,35 @@ python model/g_cnn_infer.py
 python model/h_cnn_apply.py
 python model/i_verify_apply.py
 ```
+
+
+### Results
+
+Generated frequency-domain lunar seismic data using QuakeVAE using uniform random latent space (dim=128) sampling and decoder.
+
+<p align="center">
+  <img src="./model/e_vae_infer_generated_lunar.png" alt="generated seismic data", width="85%"/>
+</p>
+
+Predictions of absence and presence of lunar quake event with QuakeCNN: **test accuracy 79%**.
+
+<p align="center">
+  <img src="./model/g_cnn_infer_predicted_lunar.png" alt="figure 2", width="85%"/>
+</p>
+
+Detected lunar seismic event examples with QuakeCNN.
+
+<p align="center">
+  <img src="./model/i_verify_apply_fig1.png" alt="figure 1", width="85%"/>
+</p>
+
+<p align="center">
+  <img src="./model/i_verify_apply_fig2.png" alt="figure 2", width="85%"/>
+</p>
+
+<p align="center">
+  <img src="./model/i_verify_apply_fig3.png" alt="figure 3", width="85%"/>
+</p>
 
 ### Limitations
 
