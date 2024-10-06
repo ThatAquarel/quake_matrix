@@ -153,6 +153,8 @@ Detected lunar seismic event examples with QuakeCNN.
   <img src="./model/i_verify_apply_fig3.png" alt="figure 3", width="85%"/>
 </p>
 
+Our [predicted catalog of seismic events](./model/i_verify_apply_lunar_catalog.csv) is located at `model/i_verify_apply_lunar_catalog.csv`
+
 ### Limitations
 
 Due to time constraints, we could not apply the CNN for martian data and bandwidth for training, although the branch of code necessary for it is already implemented.
