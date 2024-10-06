@@ -51,13 +51,14 @@ def main():
     plt.figure(figsize=(10, 5))
     for i in range(8):
         plt.subplot(2, 4, i + 1)
-        plt.pcolormesh(t, f, sxx[i])
-        plt.ylabel("Frequency [Hz]")
-        plt.xlabel("Time [sec]")
-        plt.title(f"Generated {i+1}")
+        plt.pcolormesh(t, f, sxx[i], cmap="plasma")
+        plt.ylabel("Frequency [Hz]", fontsize=6)
+        plt.xlabel("Time [sec]", fontsize=6)
+        plt.tick_params(axis="both", which="major", labelsize=4)
+        plt.title(f"Generated quake {i+1}", fontsize=8)
 
     plt.tight_layout()
-    plt.savefig("./dataset/lunar_generated.png")
+    plt.savefig("./model/e_vae_infer_generated_lunar.png", dpi=300)
     plt.show()
 
     np.savez(GENERATED, sxx=sxx)
