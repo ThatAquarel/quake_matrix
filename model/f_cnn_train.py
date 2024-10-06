@@ -122,6 +122,9 @@ def objective(trial, dataset_train, dataset_test):
     return accuracy
 
 
+BAYESIAN_RESULTS = "./model/g_bayesian_optimization.csv"
+
+
 def main(
     n=4,
 ):
@@ -134,7 +137,7 @@ def main(
     )
 
     df = study.trials_dataframe()
-    df.to_csv("./model/bayesian_optimization.csv", index=False)
+    df.to_csv(BAYESIAN_RESULTS, index=False)
 
 
 if __name__ == "__main__":
