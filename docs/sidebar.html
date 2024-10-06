@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js Cube with Resizable Viewport</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      flex: 0 0 200px; /* Fixed width for sidebar */
+      background-color: #f0f0f0;
+      border-right: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto; /* Allow scrolling */
+    }
+
+    .info {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    #canvas-container {
+      flex: 1; /* Allow canvas to fill available space */
+      position: relative;
+      overflow: hidden; /* Prevent overflow */
+    }
+
+    canvas {
+      width: 100%; /* Set canvas to fill parent */
+      height: 100%; /* Set canvas to fill parent */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2>Sidebar</h2>
+      <p>Some sidebar content here...</p>
+    </div>
+    <div class="info">
+      <h2>Information Panel</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+    <div id="canvas-container">
+      <!-- The Three.js canvas will be injected here -->
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Set up scene, camera, and renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    const canvasContainer = document.getElementById('canvas-container');
+    
+    // Append the renderer's canvas to the container
+    canvasContainer.appendChild(renderer.domElement);
+    
+    // Set initial renderer size
+    function resize() {
+      const width = canvasContainer.clientWidth;
+      const height = canvasContainer.clientHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    // Create a simple cube
+    const geometry = new THREE.BoxGeometry();
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    camera.position.z = 5;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+
+    // Call resize initially and on window resize
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Start the animation loop
+    animate();
+  </script>
+</body>
+</html>

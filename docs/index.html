@@ -1,11 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NASA Space Apps</title>
-</head>
-<body>
-    team git commit push
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Responsive Three.js Cube with Scrollable Sidebar</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100vw;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .sidebar {
+        width: 20%;
+        background-color: #f0f0f0;
+        border-right: 1px solid #ccc;
+        padding: 10px;
+        overflow-y: auto; /* Allow scrolling */
+        box-sizing: border-box; /* Include padding in width */
+      }
+
+      .info {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden; /* Prevent scrollbars */
+      }
+
+      #canvas-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden; /* Prevent overflow */
+      }
+
+      @media (max-width: 768px) {
+        body {
+          flex-direction: column; /* Stack vertically on small screens */
+        }
+        .sidebar {
+          width: 100%;
+          height: 200px; /* Fixed height for mobile sidebar */
+          border-right: none; /* Remove right border */
+          border-bottom: 1px solid #ccc; /* Add bottom border */
+          overflow-y: auto; /* Allow scrolling */
+        }
+        .info {
+          height: calc(100% - 200px); /* Remaining height for cube */
+          display: flex; /* Center the cube in the remaining space */
+          justify-content: center;
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>Information</h2>
+      <p>
+        This sidebar contains information about the project. It can be scrolled
+        if the content exceeds the visible area.
+      </p>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac
+        libero euismod, accumsan libero id, tincidunt elit.
+      </p>
+      <p>Another line of content to demonstrate scrolling behavior.</p>
+      <p>More text to ensure the sidebar has enough content to scroll.</p>
+      <p>
+        Even more content just to be safe. This should allow the sidebar to
+        scroll properly.
+      </p>
+      <p>Additional content for demonstration purposes.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+    <div class="info">
+      <div id="canvas-container"></div>
+    </div>
+
+    <script type="module"  src="index.js"></script>
+  </body>
 </html>
