@@ -1,6 +1,6 @@
 # space
 
-Tian Yi Xia<sup>1</sup>, Thomas D<sup>1</sup>, Mateo Duque<sup>1</sup>
+Tian Yi Xia<sup>1</sup>, Thomas Deleuze-Bisson<sup>1</sup>, Mateo Duque<sup>1</sup>
 
 <sup>1</sup>Dawson College, Montréal
 
