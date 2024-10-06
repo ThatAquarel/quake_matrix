@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 
@@ -30,6 +32,9 @@ def get_quakes(arr):
 
 def main():
     softmax = nn.Softmax(dim=1)
+
+    time_rel = []
+    filename = []
 
     for file in a.recursive_files(a.PREPROCESS_DIR, ext_filter=".pth"):
         if "mars" in file:
