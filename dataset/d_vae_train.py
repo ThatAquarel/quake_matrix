@@ -163,6 +163,8 @@ def loss_function(x_gen, x, mu, logvar, beta=100):
 
 
 QUAKE_VAE = "./dataset/QuakeVAE.pth"
+LATENT_DIM = 128
+WINDOW_SIZE = (64, 128)
 
 
 def main(
@@ -170,7 +172,7 @@ def main(
     momentum=0.8,
     epochs=64,
     batch_size=4,
-    latent_dim=128,
+    latent_dim=LATENT_DIM,
 ):
     dataset = QuakeDatasetVAE(lunar=True, debug=False)
     dataloader = nn_data.DataLoader(dataset, batch_size=batch_size)
