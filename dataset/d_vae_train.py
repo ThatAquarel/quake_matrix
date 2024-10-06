@@ -23,6 +23,11 @@ class QuakeDatasetVAE(nn_data.Dataset):
         if debug:
             self.verify_indices()
 
+    def _normalize(self, sxx):
+        arr_min = torch.min(sxx)
+        arr_max = torch.max(sxx)
+        return (sxx - arr_min) / (arr_max - arr_min)
+
     def load_catalog(self):
         if self.lunar:
             catalog_dir = c.CATALOG_LUNAR
@@ -57,6 +62,8 @@ class QuakeDatasetVAE(nn_data.Dataset):
             self.sxx_all[i, : f.size, : t.size] = torch.from_numpy(sxx)
 
             self.time_rel[i] = row["time_rel(sec)"]
+
+        self.sxx_all = self._normalize(self.sxx_all)
 
     def compute_index(self, pre=4, post=124):
         dt = torch.abs(self.t_all - self.time_rel.view(-1, 1))
@@ -102,96 +109,80 @@ class QuakeDatasetVAE(nn_data.Dataset):
         return self.indices.size(0)
 
     def __getitem__(self, idx):
-        sxx = self.get_sxx(idx)
-        return sxx.reshape((1, *sxx.shape))
+        return self.get_sxx(idx).flatten()
 
 
 class QuakeVAE(nn.Module):
-    def __init__(self, window_size, latent_dim=4):
+    def __init__(self, input_dim, latent_dim, h0_n):
         super(QuakeVAE, self).__init__()
 
-        self.encoder = nn.Sequential(
-            nn.Conv2d(
-                1, 32, kernel_size=4, stride=2, padding=1
-            ),  # (B, 32, img_size/2, img_size/2)
-            nn.ReLU(),
-            nn.Conv2d(
-                32, 64, kernel_size=4, stride=2, padding=1
-            ),  # (B, 64, img_size/4, img_size/4)
-            nn.ReLU(),
-            nn.Conv2d(
-                64, 128, kernel_size=4, stride=2, padding=1
-            ),  # (B, 128, img_size/8, img_size/8)
-            nn.ReLU(),
-            nn.Flatten(),
-        )
+        # encoder layers
+        self.f1_enc = nn.Linear(input_dim, h0_n)
+        self.f2_mu = nn.Linear(h0_n, latent_dim)
+        self.f2_logvar = nn.Linear(h0_n, latent_dim)
 
-        # Calculate the output size after convolutions for fully connected layers
-        conv_img_size = np.array(window_size) // 8
-        conv_output_size = np.multiply.reduce(conv_img_size) * 128
+        # self.encoder = nn.Sequential(
+        #     nn.Linear(input_dim, h0_n),
+        #     nn.ReLU(),
+        #     nn.Linear(h0_n, h1_n),
+        #     nn.ReLU(),
+        # )
 
-        # Latent space representation
-        self.fc_mu = nn.Linear(conv_output_size, latent_dim)
-        self.fc_logvar = nn.Linear(conv_output_size, latent_dim)
+        # decoder layers
+        self.fc3 = nn.Linear(latent_dim, h0_n)
+        self.fc4 = nn.Linear(h0_n, input_dim)
 
-        # Fully connected layer to map latent space to decoded output
-        self.fc_decode = nn.Linear(latent_dim, conv_output_size)
-
-        # Define the Decoder
-        self.decoder = nn.Sequential(
-            nn.Unflatten(1, (128, int(conv_img_size[0]), int(conv_img_size[1]))),
-            nn.ConvTranspose2d(
-                128, 64, kernel_size=4, stride=2, padding=1
-            ),  # (B, 64, img_size/4, img_size/4)
-            nn.ReLU(),
-            nn.ConvTranspose2d(
-                64, 32, kernel_size=4, stride=2, padding=1
-            ),  # (B, 32, img_size/2, img_size/2)
-            nn.ReLU(),
-            nn.ConvTranspose2d(
-                32, 1, kernel_size=4, stride=2, padding=1
-            ),  # (B, 1, img_size, img_size)
-            nn.Sigmoid(),  # Output in range [0, 1] for normalized images
-        )
+        # self.decoder = nn.Sequential(
+        #     nn.ReLU(),
+        #     nn.Linear(h1_n, h0_n),
+        #     nn.ReLU(),
+        #     nn.Linear(h0_n, input_dim),
+        #     nn.Sigmoid(),
+        # )
 
     def encode(self, x):
-        h = self.encoder(x)
-        mu = self.fc_mu(h)
-        logvar = self.fc_logvar(h)
-        return mu, logvar
+        # encode data into latent space
+        h1 = F.relu(self.f1_enc(x))
+        return self.f2_mu(h1), self.f2_logvar(h1)
 
     def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
-        return mu + eps * std  # Reparameterization trick
+        # random sample in latent space distribution
+        stdev = torch.exp(0.5 * logvar)
+        epsilon = torch.randn_like(stdev)
+        return mu + epsilon * stdev
 
     def decode(self, z):
-        h = self.fc_decode(z)
-        return self.decoder(h)
+        # decode data from latent space
+        h3 = F.relu(self.fc3(z))
+        return torch.sigmoid(self.fc4(h3))
 
     def forward(self, x):
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        recon_x = self.decode(z)
-        return recon_x, mu, logvar
+        return self.decode(z), mu, logvar
 
 
 def loss_function(x_gen, x, mu, logvar):
-    mse = F.mse_loss(x_gen, x, reduction="sum")
+    # mse = F.mse_loss(x_gen, x, reduction="sum")
+    # kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+    mse = nn.functional.binary_cross_entropy(x_gen, x, reduction="sum")
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    return mse + kld
+
+    return mse + kld * 100
 
 
 def main(
-    lr=1e-3,
+    lr=1e-4,
     epochs=256,
-    batch_size=4,
+    batch_size=64,
+    latent_dim=256,
 ):
     dataset = QuakeDatasetVAE(lunar=True, debug=False)
     dataloader = nn_data.DataLoader(dataset, batch_size=batch_size)
 
-    model = QuakeVAE(dataset.get_window_size())
-    optimizer = optim.Adam(model.parameters(), lr)
+    model = QuakeVAE(dataset.get_window_size_flat(), latent_dim, 1024)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.8)
 
     for epoch in range(epochs):
         model.train()
@@ -208,7 +199,7 @@ def main(
 
     model.eval()
     with torch.no_grad():
-        z = torch.randn(10, 4)
+        z = torch.randn(10, latent_dim)
         sxx = model.decode(z)
         sxx = sxx.reshape((10, *dataset.get_window_size())).cpu()
 
