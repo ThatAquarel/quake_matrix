@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 
@@ -33,8 +34,8 @@ def get_quakes(arr):
 def main():
     softmax = nn.Softmax(dim=1)
 
-    time_rel = []
-    filename = []
+    filenames = []
+    time_rels = []
 
     for file in a.recursive_files(a.PREPROCESS_DIR, ext_filter=".pth"):
         if "mars" in file:
@@ -65,12 +66,20 @@ def main():
         (indices,) = np.where(dy > QUAKE_THRESHOLD)
         quakes = get_quakes(indices)
 
+        filename = os.path.basename(file)
         for quake in quakes:
             quake_t = t[quake + 64]
+
+            filenames.append(filename[:-8])
+            time_rels.append(quake_t)
+
             ax0.axvline(x=quake_t, c="red", label="Abs. Arrival")
             ax1.axvline(x=quake_t, c="red", label="Abs. Arrival")
 
-        plt.show()
+        # plt.show()
+
+    df = pd.DataFrame(data={"filename": filenames, "time_rel(sec)": time_rels})
+    df.to_csv("./model/i_verify_apply_lunar_catalog.csv", index=False)
 
 
 if __name__ == "__main__":
