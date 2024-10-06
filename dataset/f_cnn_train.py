@@ -26,6 +26,11 @@ class QuakeDatasetCNN(d.QuakeDatasetVAE):
         self.train = train
         self.lunar = lunar
 
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+
         if not self.lunar:
             raise NotImplementedError()
 
@@ -36,14 +41,18 @@ class QuakeDatasetCNN(d.QuakeDatasetVAE):
         vae_data = np.load(file)
         sxx = vae_data["sxx"]
 
-        self.gen_quake = torch.from_numpy(sxx)
-        self.no_quake = torch.zeros(self.get_window_size())
+        window_size = self.get_window_size()
+        self.gen_quake = torch.from_numpy(sxx).reshape((-1, 1, *window_size))
+        self.no_quake = torch.zeros((1, *window_size))
         self.rand = torch.randint(0, 2, (len(self),))
+
+        self.gen_quake = self.gen_quake.to(self.device)
+        self.no_quake = self.no_quake.to(self.device)
 
     def __len__(self):
         if self.train:
             return self.gen_quake.shape[0]
-        return len(super())
+        return super().__len__()
 
     def __getitem__(self, idx):
         if self.train:
@@ -52,69 +61,68 @@ class QuakeDatasetCNN(d.QuakeDatasetVAE):
             return (self.no_quake, 0)
 
         sxx = super().__getitem__(idx)
-        return sxx.reshape(self.get_window_size()), 1
+        return sxx.reshape((1, *self.get_window_size())), 1
 
 
 class QuakeCNN(nn.Module):
     def __init__(self, num_classes):
         super(QuakeCNN, self).__init__()
-        self.first_conv_layer = nn.Conv2d(
-            in_channels=1, out_channels=20, kernel_size=4, stride=1, padding=1
+
+        self.cnn = nn.Sequential(
+            nn.Conv2d(1, 64, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(64, 192, kernel_size=5, padding=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            nn.Conv2d(192, 384, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(384 * 3 * 7, 512),
+            nn.ReLU(),
+            nn.Linear(512, 128),
+            nn.ReLU(),
+            nn.Linear(128, num_classes),
         )
-        self.pool_layer = nn.MaxPool2d(kernel_size=3, stride=2, padding=0)
-        self.second_conv_layer = nn.Conv2d(20, 40, kernel_size=4, stride=1, padding=1)
-        self.third_conv_layer = nn.Conv2d(40, 80, kernel_size=4, stride=1, padding=1)
-        self.first_connect_layer = nn.Linear(80 * 30 * 30, out_features=256)
-        self.second_connect_layer = nn.Linear(256, num_classes)
 
     def forward(self, x):
-        x = self.pool_layer(F.relu(self.first_conv_layer(x)))
-        x = self.pool_layer(F.relu(self.second_conv_layer(x)))
-        x = self.pool_layer(F.relu(self.third_conv_layer(x)))
-        x = x.view(-1, 80 * 30 * 30)
-        x = F.relu(self.first_connect_layer(x))
-        x = self.second_connect_layer(x)
-        return x
+        return self.cnn(x)
 
 
 def objective(trial):
     num_classes = 2
-    learning_rate = trial.suggest_loguniform("lr", 1e-5, 1e-1)
+    learning_rate = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
+    momentum = trial.suggest_float("momentum", 0.85, 1.0)
     batch_size = trial.suggest_int("batch_size", 16, 128)
     num_epochs = trial.suggest_int("num_epochs", 5, 50)
 
-    transform = transforms.Compose(
-        [
-            transforms.ToTensor(),
-        ]
-    )
-
     dataset_train = QuakeDatasetCNN(train=True)
-    dataset_test = QuakeDatasetCNN(train=False)
+    dataloader_train = DataLoader(dataset_train, batch_size=batch_size)
 
-    dataset = ImageFolder("pathdata", transform=transform)
-    train_data, val_data = train_test_split(dataset, test_size=0.2)
-    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=False)
+    dataset_test = QuakeDatasetCNN(train=False)
+    dataloader_test = DataLoader(dataset_test, batch_size=batch_size)
 
     model = QuakeCNN(num_classes)
     criterion = nn.CrossEntropyLoss()
-    optimizer = Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
 
     for epoch in range(num_epochs):
         model.train()
-        for images, labels in train_loader:
+        for images, labels in dataloader_train:
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
 
+        if epoch % 5 == 0:
+            print(f"epoch {epoch}, Loss: {loss.item()}")
+
     model.eval()
     correct = 0
     total = 0
     with torch.no_grad():
-        for images, labels in val_loader:
+        for images, labels in dataloader_test:
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -124,7 +132,12 @@ def objective(trial):
     return accuracy
 
 
-study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=50)
+if torch.cuda.is_available():
+    torch.set_default_device("cuda:0")
 
-print(study.best_params)
+
+study = optuna.create_study(direction="maximize")
+study.optimize(objective, n_trials=3)
+
+df = study.trials_dataframe()
+df.to_csv("./bayasian_optmization.csv", index=False)
