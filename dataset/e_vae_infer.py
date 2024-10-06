@@ -60,7 +60,7 @@ def main():
     plt.savefig("./dataset/lunar_generated.png")
     plt.show()
 
-    np.savez(GENERATED)
+    np.savez(GENERATED, sxx=sxx)
 
 
 if __name__ == "__main__":
