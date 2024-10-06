@@ -61,6 +61,7 @@ class QuakeDatasetVAE(nn_data.Dataset):
 
             self.time_rel[i] = row["time_rel(sec)"]
 
+        self.sxx_all_before_norm = self.sxx_all
         self.sxx_all = self._normalize(self.sxx_all)
 
     def compute_index(self, pre=4, post=124):
