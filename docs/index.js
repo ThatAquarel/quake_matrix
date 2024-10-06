@@ -4,7 +4,7 @@ import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.124/examples
 
 // Set up scene, camera, and renderer
 var textureURL =
-  "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/lroc_color_poles_1k.jpg";
+  "https://raw.githubusercontent.com/ThatAquarel/quake_matrix/refs/heads/main/docs/color_poles_1k.jpg";
 var displacementURL =
   "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/ldem_3_8bit.jpg";
 

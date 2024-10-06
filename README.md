@@ -165,6 +165,11 @@ Due to time constraints, we could not apply the CNN for martian data and bandwid
 - [Challenge Description](https://www.spaceappschallenge.org/nasa-space-apps-2024/challenges/seismic-detection-across-the-solar-system/?tab=resources).
 
 
+### Datasets
+
+- [NASA CGI Moon Kit](https://svs.gsfc.nasa.gov/4720/)
+- [Space Apps 2024 Seismic Detection Data Packet](https://www.spaceappschallenge.org/nasa-space-apps-2024/challenges/seismic-detection-across-the-solar-system/?tab=resources)
+
 ### Contacts
 
 - [Tian Yi, Xia](https://github.com/ThatAquarel/space), xtxiatianyi@gmail.com: Machine learning models programmer (QuakeVAE and QuakeCNN), and data wrangling.
