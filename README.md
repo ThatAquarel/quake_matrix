@@ -1,4 +1,6 @@
-
+<p align="center">
+  <img src="./docs/logo.jpg" alt="figure 1", width="100%"/>
+</p>
 
 # Variational Autoencoders for Data Augmentation in Lunar Seismic Frequency Domain Analysis Using Convolutional Neural Networks
 
