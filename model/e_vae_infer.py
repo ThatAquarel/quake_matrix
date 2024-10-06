@@ -47,6 +47,7 @@ def main():
         sxx = sxx.reshape((N_GEN, *d.WINDOW_SIZE)).cpu()
 
         t, f = dataset.get_t(0).cpu(), dataset.get_f(0).cpu()
+        t -= t.min()
 
     plt.figure(figsize=(10, 5))
     for i in range(8):
@@ -67,5 +68,7 @@ def main():
 if __name__ == "__main__":
     if torch.cuda.is_available():
         torch.set_default_device("cuda:0")
+
+    plt.rcParams["text.usetex"] = True
 
     main()
