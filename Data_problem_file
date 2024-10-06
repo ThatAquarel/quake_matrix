@@ -1,3 +1,0 @@
-A data problem… : 
-
-Training a super efficient model seems great in theory until you realize that you can only do so if you have a huge amount of data to train it on. This can vary from case to case but most models take tens in not hundreds of thousands of lines of data before becoming super accurate. We had 84. 84 lines are, of course, not even remotely close enough to train a well designed model, especially since seismic data is pretty detailed. This problem led us to one of the most useful tools we had ever encountered : variational encoders.

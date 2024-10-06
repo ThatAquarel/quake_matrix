@@ -1,20 +1,10 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.utils.data as nn_data
-
-import numpy as np
-import pandas as pd
-
-import optuna
-from torch.optim import Adam
-from sklearn.model_selection import train_test_split
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 
-import a_generate_spectrogram as a
-import c_generate_catalog as c
+import optuna
+import numpy as np
+
 import d_vae_train as d
 import e_vae_infer as e
 
@@ -65,7 +55,7 @@ class QuakeDatasetCNN(d.QuakeDatasetVAE):
 
 
 class QuakeCNN(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes=2):
         super(QuakeCNN, self).__init__()
 
         self.cnn = nn.Sequential(
@@ -89,22 +79,18 @@ class QuakeCNN(nn.Module):
         return self.cnn(x)
 
 
-def objective(trial):
-    num_classes = 2
+def objective(trial, dataset_train, dataset_test):
     learning_rate = trial.suggest_float("lr", 1e-5, 1e-1, log=True)
-    momentum = trial.suggest_float("momentum", 0.85, 1.0)
     batch_size = trial.suggest_int("batch_size", 16, 128)
     num_epochs = trial.suggest_int("num_epochs", 5, 50)
 
-    dataset_train = QuakeDatasetCNN(train=True)
     dataloader_train = DataLoader(dataset_train, batch_size=batch_size)
-
-    dataset_test = QuakeDatasetCNN(train=False)
     dataloader_test = DataLoader(dataset_test, batch_size=batch_size)
 
-    model = QuakeCNN(num_classes)
+    model = QuakeCNN()
+
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     for epoch in range(num_epochs):
         model.train()
@@ -128,16 +114,31 @@ def objective(trial):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
+    model_file = f"./dataset/QuakeCNN_{trial.number}.pth"
+    torch.save(model.state_dict(), model_file)
+    trial.set_user_attr("model_file", model_file)
+
     accuracy = correct / total
     return accuracy
 
 
-if torch.cuda.is_available():
-    torch.set_default_device("cuda:0")
+def main(
+    n=4,
+):
+    dataset_train = QuakeDatasetCNN(train=True)
+    dataset_test = QuakeDatasetCNN(train=False)
+
+    study = optuna.create_study(direction="maximize")
+    study.optimize(
+        lambda trial: objective(trial, dataset_train, dataset_test), n_trials=n
+    )
+
+    df = study.trials_dataframe()
+    df.to_csv("./bayasian_optmization.csv", index=False)
 
 
-study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=3)
+if __name__ == "__main__":
+    if torch.cuda.is_available():
+        torch.set_default_device("cuda:0")
 
-df = study.trials_dataframe()
-df.to_csv("./bayasian_optmization.csv", index=False)
+    main()
