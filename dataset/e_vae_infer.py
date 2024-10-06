@@ -57,8 +57,8 @@ def main():
         plt.title(f"Generated {i+1}")
 
     plt.tight_layout()
-    plt.show()
     plt.savefig("./dataset/lunar_generated.png")
+    plt.show()
 
     np.savez(GENERATED)
 
