@@ -10,12 +10,6 @@ import b_verify_spectrogram as b
 import c_generate_catalog as c
 
 
-def normalize(sxx):
-    arr_min = torch.min(sxx)
-    arr_max = torch.max(sxx)
-    return (sxx - arr_min) / (arr_max - arr_min)
-
-
 class QuakeDatasetVAE(nn_data.Dataset):
     def __init__(self, lunar=True, debug=False) -> None:
         super().__init__()
@@ -26,6 +20,11 @@ class QuakeDatasetVAE(nn_data.Dataset):
 
         if debug:
             self.verify_indices()
+
+    def _normalize(self, sxx):
+        arr_min = torch.min(sxx)
+        arr_max = torch.max(sxx)
+        return (sxx - arr_min) / (arr_max - arr_min)
 
     def load_catalog(self):
         if self.lunar:
@@ -62,7 +61,7 @@ class QuakeDatasetVAE(nn_data.Dataset):
 
             self.time_rel[i] = row["time_rel(sec)"]
 
-        self.sxx_all = normalize(self.sxx_all)
+        self.sxx_all = self._normalize(self.sxx_all)
 
     def compute_index(self, pre=4, post=124):
         dt = torch.abs(self.t_all - self.time_rel.view(-1, 1))
