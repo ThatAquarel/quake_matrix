@@ -35,7 +35,7 @@ We propose **QuakeVAE**, a variational autoencoder as a dataset augmentation tec
   <img src="./docs/fig2.png" alt="figure 2", width="65%"/>
 </p>
 
-We use **QuakeCNN**, a convolutional neural network, to classify over time absence and presence of seimic events.
+We also propose **QuakeCNN**, a convolutional neural network, to classify over time absence and presence of seimic events.
 
 <p align="center">
   <img src="./docs/fig3.png" alt="figure 3", width="65%"/>
