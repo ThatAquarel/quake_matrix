@@ -59,9 +59,10 @@ def main():
     dataset = QuakeFullDatasetCNN()
     dataset = list(dataset)
 
-    for file, _, _, batch in tqdm(dataset):
-        y = model(batch)
-        torch.save(y.cpu(), f"{file}.pth")
+    with torch.no_grad():
+        for file, _, _, batch in tqdm(dataset):
+            y = model(batch)
+            torch.save(y.cpu(), f"{file}.pth")
 
 
 if __name__ == "__main__":
