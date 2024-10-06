@@ -1,0 +1,10 @@
+Concepts : 
+
+Variational encoders 
+
+Variational encoders are a super useful tool that allows us to generate more accurate and representative data based on the one that we already have. It starts by deconstructing our graphs into less complicated versions of themselves only to then compare them to the actual data in order to learn its detailed patterns and structures. Once these complicated patterns are encoded in its memory, it builds new data from it and gets a desired number of hyper-realistic graphs.
+
+We also feel like it's important to mention that before generating new data, we converted the time series graphs into spectrograms in which the patterns are way easier to analyze for the variational encoder.
+
+All of this leads up to feeding the data into our designed 2D convolutional deep learning model which takes into acquisition all of the graphs patterns and then tries to identify those same structures and movements into the “non-identified data”, the 30 year of seismic frequencies on the mars and the moon in order to identify all of the unlisted earthquakes that have happened during this time range. 
+

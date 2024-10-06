@@ -1,0 +1,3 @@
+Our project : 
+
+No doubt, learning from patterns in order to understand how moonquakes work is awesome ! However, how do we get to analyze all of this data and deduce things from it ? With a 2D deep learning convolutional model. 2D models allow us to analyze graphical patterns in large scaled training data and to store all of them in a feature map. The model will then try to identify those same patterns in regular data that doesn't have any label or indications. This all seemed in our programmers mind until we faced a big problem, the data !
