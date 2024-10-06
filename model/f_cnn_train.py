@@ -114,7 +114,7 @@ def objective(trial, dataset_train, dataset_test):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    model_file = f"./dataset/QuakeCNN_{trial.number}.pth"
+    model_file = f"./model/QuakeCNN_{trial.number}.pth"
     torch.save(model.state_dict(), model_file)
     trial.set_user_attr("model_file", model_file)
 
@@ -134,7 +134,7 @@ def main(
     )
 
     df = study.trials_dataframe()
-    df.to_csv("./bayasian_optmization.csv", index=False)
+    df.to_csv("./model/bayesian_optimization.csv", index=False)
 
 
 if __name__ == "__main__":
