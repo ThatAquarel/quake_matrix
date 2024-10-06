@@ -6,21 +6,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import d_vae_train as d
-import f_cnn_train as a
+import f_cnn_train as cnn
 
 
-def main():
-    vae_dataset = d.QuakeDatasetVAE(lunar=True, debug=False)
-    cnn_dataset = a.QuakeDatasetCNN(lunar=True, train=False)
-    model = a.QuakeCNN()
-
-    bayesian_results = pd.read_csv(a.BAYESIAN_RESULTS)
+def load_best_candidate(model):
+    bayesian_results = pd.read_csv(cnn.BAYESIAN_RESULTS)
     best_candidate = bayesian_results.iloc[bayesian_results["value"].idxmax()]
 
     model_file = best_candidate["user_attrs_model_file"]
     state_dict = torch.load(model_file)
 
     model.load_state_dict(state_dict)
+
+
+def main():
+    vae_dataset = d.QuakeDatasetVAE(lunar=True, debug=False)
+    cnn_dataset = cnn.QuakeDatasetCNN(lunar=True, train=False)
+
+    model = cnn.QuakeCNN()
+    load_best_candidate(model)
     model.eval()
 
     softmax = nn.Softmax(dim=1)
