@@ -7,7 +7,6 @@ var textureURL =
   "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/lroc_color_poles_1k.jpg";
 var displacementURL =
   "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/ldem_3_8bit.jpg";
-var worldURL = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/hipp8_s.jpg";
 
 var scene = new THREE.Scene();
 
@@ -18,7 +17,7 @@ var camera = new THREE.PerspectiveCamera(
   1000
 );
 
-var renderer = new THREE.WebGLRenderer();
+var renderer = new THREE.WebGLRenderer({antialias:true});
 
 var controls = new OrbitControls(camera, renderer.domElement);
 controls.enablePan = false;
@@ -42,7 +41,6 @@ var geometry = new THREE.SphereGeometry(2, 60, 60);
 var textureLoader = new THREE.TextureLoader();
 var texture = textureLoader.load(textureURL);
 var displacementMap = textureLoader.load(displacementURL);
-var worldTexture = textureLoader.load(worldURL);
 
 var material = new THREE.MeshPhongMaterial({
   color: 0xffffff,
@@ -63,9 +61,9 @@ scene.add(light);
 
 var worldGeometry = new THREE.SphereGeometry(1000, 60, 60);
 var worldMaterial = new THREE.MeshBasicMaterial({
-//   color: 0x424242,
-color: 0x000000,
-  map: worldTexture,
+  //   color: 0x424242,
+  color: 0x000000,
+  //   map: worldTexture,
   side: THREE.BackSide,
 });
 var world = new THREE.Mesh(worldGeometry, worldMaterial);
@@ -76,29 +74,47 @@ scene.add(moon);
 const pointCount = 1000;
 const positions = new Float32Array(pointCount * 3);
 for (let i = 0; i < pointCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 100; // x
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 100; // y
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 100; // z
+  positions[i * 3] = (Math.random() - 0.5) * 100; // x
+  positions[i * 3 + 1] = (Math.random() - 0.5) * 100; // y
+  positions[i * 3 + 2] = (Math.random() - 0.5) * 100; // z
 }
 
 // Create a geometry and add the positions
 const buf_geom = new THREE.BufferGeometry();
-buf_geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+buf_geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
 // Create a material for the points
-const buf_material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.0001 });
+const buf_material = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.0001,
+});
 
 // Create the points object
 const points = new THREE.Points(buf_geom, buf_material);
 scene.add(points);
+
+const duration = 4200; // Animation duration in milliseconds
+        const startTime = Date.now();
 
 camera.position.z = 5;
 
 moon.rotation.x = 3.1415 * 0.02;
 moon.rotation.y = 3.1415 * 1.54;
 
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
 function animate() {
   requestAnimationFrame(animate);
+    // Calculate the elapsed time
+    const elapsedTime = Date.now() - startTime;
+    const progress = Math.min(elapsedTime / duration, 1); // Clamp between 0 and 1
+
+    const scale = easeOutCubic(progress * 1);
+    moon.scale.set(scale, scale, scale);
+
+
   moon.rotation.y += 0.0005;
   moon.rotation.x += 0.00002;
   world.rotation.y += 0.00002;
