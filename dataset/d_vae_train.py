@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
 import torch.utils.data as nn_data
 
 import numpy as np
@@ -113,37 +111,33 @@ class QuakeDatasetVAE(nn_data.Dataset):
 
 
 class QuakeVAE(nn.Module):
-    def __init__(self, input_dim, latent_dim, h0_n):
+    def __init__(self, input_dim, latent_dim, h0_n=1024, h1_n=256):
         super(QuakeVAE, self).__init__()
 
         # encoder layers
-        self.f1_enc = nn.Linear(input_dim, h0_n)
-        self.f2_mu = nn.Linear(h0_n, latent_dim)
-        self.f2_logvar = nn.Linear(h0_n, latent_dim)
-
-        # self.encoder = nn.Sequential(
-        #     nn.Linear(input_dim, h0_n),
-        #     nn.ReLU(),
-        #     nn.Linear(h0_n, h1_n),
-        #     nn.ReLU(),
-        # )
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, h0_n),
+            nn.ReLU(),
+            nn.Linear(h0_n, h1_n),
+            nn.ReLU(),
+        )
+        self.enc_mu = nn.Linear(h1_n, latent_dim)
+        self.enc_logvar = nn.Linear(h1_n, latent_dim)
 
         # decoder layers
-        self.fc3 = nn.Linear(latent_dim, h0_n)
-        self.fc4 = nn.Linear(h0_n, input_dim)
-
-        # self.decoder = nn.Sequential(
-        #     nn.ReLU(),
-        #     nn.Linear(h1_n, h0_n),
-        #     nn.ReLU(),
-        #     nn.Linear(h0_n, input_dim),
-        #     nn.Sigmoid(),
-        # )
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_dim, h1_n),
+            nn.ReLU(),
+            nn.Linear(h1_n, h0_n),
+            nn.ReLU(),
+            nn.Linear(h0_n, input_dim),
+            nn.Sigmoid(),
+        )
 
     def encode(self, x):
         # encode data into latent space
-        h1 = F.relu(self.f1_enc(x))
-        return self.f2_mu(h1), self.f2_logvar(h1)
+        enc_h = self.encoder(x)
+        return self.enc_mu(enc_h), self.enc_logvar(enc_h)
 
     def reparameterize(self, mu, logvar):
         # random sample in latent space distribution
@@ -153,8 +147,7 @@ class QuakeVAE(nn.Module):
 
     def decode(self, z):
         # decode data from latent space
-        h3 = F.relu(self.fc3(z))
-        return torch.sigmoid(self.fc4(h3))
+        return self.decoder(z)
 
     def forward(self, x):
         mu, logvar = self.encode(x)
@@ -162,27 +155,28 @@ class QuakeVAE(nn.Module):
         return self.decode(z), mu, logvar
 
 
-def loss_function(x_gen, x, mu, logvar):
-    # mse = F.mse_loss(x_gen, x, reduction="sum")
-    # kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-
-    mse = nn.functional.binary_cross_entropy(x_gen, x, reduction="sum")
+def loss_function(x_gen, x, mu, logvar, beta=100):
+    loss = nn.functional.binary_cross_entropy(x_gen, x, reduction="sum")
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-    return mse + kld * 100
+    return loss + kld * beta
+
+
+QUAKE_VAE = "./dataset/QuakeVAE.pth"
 
 
 def main(
-    lr=1e-4,
-    epochs=256,
-    batch_size=64,
-    latent_dim=256,
+    lr=1e-5,
+    momentum=0.8,
+    epochs=64,
+    batch_size=4,
+    latent_dim=128,
 ):
     dataset = QuakeDatasetVAE(lunar=True, debug=False)
     dataloader = nn_data.DataLoader(dataset, batch_size=batch_size)
 
-    model = QuakeVAE(dataset.get_window_size_flat(), latent_dim, 1024)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.8)
+    model = QuakeVAE(dataset.get_window_size_flat(), latent_dim)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=momentum)
 
     for epoch in range(epochs):
         model.train()
@@ -197,7 +191,13 @@ def main(
         if epoch % 10 == 0:
             print(f"epoch {epoch}, Loss: {loss.item()}")
 
+    torch.save(model.state_dict(), QUAKE_VAE)
+    eval(model, latent_dim, dataset)
+
+
+def eval(model, latent_dim, dataset):
     model.eval()
+
     with torch.no_grad():
         z = torch.randn(10, latent_dim)
         sxx = model.decode(z)
