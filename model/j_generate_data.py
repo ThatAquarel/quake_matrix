@@ -37,8 +37,28 @@ def main():
     filenames = []
     time_rels = []
 
+    js_data = open("./docs/data.js", "w+")
+    js_data.write("data=[\n")
+
     for file in a.recursive_files(a.PREPROCESS_DIR, ext_filter=".pth"):
-        print(file)
+        skip = True
+        for string in [
+            "00006",
+            "00007",
+            "00018",
+            "00021",
+            "00026",
+            "00028",
+            "00031",
+            "00032",
+            "00033",
+            "00039",
+        ]:
+            if string in file:
+                skip = False
+                break
+        if skip:
+            continue
 
         if "mars" in file:
             continue
@@ -69,19 +89,59 @@ def main():
         quakes = get_quakes(indices)
 
         filename = os.path.basename(file)
+        quake_t = None
         for quake in quakes:
             quake_t = t[quake + 64]
 
             filenames.append(filename[:-8])
             time_rels.append(quake_t)
 
+            quake_t = quake
+
             ax0.axvline(x=quake_t, c="red", label="Abs. Arrival")
             ax1.axvline(x=quake_t, c="red", label="Abs. Arrival")
 
-        plt.show()
+        time_data = pd.read_csv(
+            file[:-8].replace("dataset", "data").replace("test\\", "test\\data\\")
+        )
+        vel = time_data[["velocity(m/s)"]]
+        scale_factor = len(vel) // len(t)
 
-    df = pd.DataFrame(data={"filename": filenames, "time_rel(sec)": time_rels})
-    df.to_csv("./model/i_verify_apply_lunar_catalog.csv", index=False)
+        averaged = vel.groupby(np.arange(len(vel)) // scale_factor).mean()
+        averaged = np.array(averaged).reshape(-1)
+
+        principal_f = np.argmax(sxx, axis=0)
+        selected_f = f[principal_f]
+
+        sample_name = filename[14:-12]
+
+        def get_str(arr):
+            builder = "["
+            for i in arr:
+                builder += f"{i:.5f},"
+            builder += "]"
+            return builder
+
+        def normalize(arr):
+            arr_min = np.min(arr)
+            arr_max = np.max(arr)
+            return (arr - arr_min) / (arr_max - arr_min)
+
+        t_str = get_str(prob_t)
+        p_str = get_str(normalize(prob_quake))
+        f_str = get_str(selected_f)
+        a_str = get_str(normalize(averaged))
+
+        js_data.write("{\n")
+        js_data.write(f'name: "{sample_name}",\n')
+        js_data.write(f"t: {t_str},\n")
+        js_data.write(f"p: {p_str},\n")
+        js_data.write(f"f: {f_str},\n")
+        js_data.write(f"a: {a_str},\n")
+        js_data.write("},\n")
+
+    js_data.write("];\n")
+    js_data.close()
 
 
 if __name__ == "__main__":
