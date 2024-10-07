@@ -2,117 +2,89 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.124/build/three.mod
 
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.124/examples/jsm/controls/OrbitControls.js";
 
-// Set up scene, camera, and renderer
-var textureURL =
-  "https://raw.githubusercontent.com/ThatAquarel/quake_matrix/refs/heads/main/docs/color_poles_1k.jpg";
-var displacementURL =
-  "https://s3-us-west-2.amazonaws.com/s.cdpn.io/17271/ldem_3_8bit.jpg";
+let texture_url ="https://raw.githubusercontent.com/ThatAquarel/quake_matrix/refs/heads/main/docs/color_poles_1k.jpg";
 
-var scene = new THREE.Scene();
+let scene = new THREE.Scene();
 
-var camera = new THREE.PerspectiveCamera(
+let camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
-  0.1,
-  1000
+  0.01,
+  800
 );
 
-var renderer = new THREE.WebGLRenderer({ antialias: true });
+let renderer = new THREE.WebGLRenderer({ antialias: true });
+new OrbitControls(camera, renderer.domElement);
 
-var controls = new OrbitControls(camera, renderer.domElement);
-controls.enablePan = false;
+const container = document.getElementById("canvas-container");
+container.appendChild(renderer.domElement);
 
-const canvasContainer = document.getElementById("canvas-container");
-
-// Append the renderer's canvas to the container
-canvasContainer.appendChild(renderer.domElement);
-
-// Set the initial renderer size
 function resize() {
-  const width = canvasContainer.clientWidth;
-  const height = canvasContainer.clientHeight;
+  const width = container.clientWidth;
+  const height = container.clientHeight;
   renderer.setSize(width, height);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
 }
 
-var geometry = new THREE.SphereGeometry(2, 60, 60);
-
-var textureLoader = new THREE.TextureLoader();
-var texture = textureLoader.load(textureURL);
-var displacementMap = textureLoader.load(displacementURL);
-
-var material = new THREE.MeshPhongMaterial({
-  color: 0xffffff,
-  map: texture,
-  displacementMap: displacementMap,
-  displacementScale: 0.06,
-  bumpMap: displacementMap,
-  bumpScale: 0.04,
-  reflectivity: 0,
-  shininess: 0,
-});
-
-var moon = new THREE.Mesh(geometry, material);
-
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(-100, 10, 50);
-scene.add(light);
-
-var worldGeometry = new THREE.SphereGeometry(1000, 60, 60);
-var worldMaterial = new THREE.MeshBasicMaterial({
-  //   color: 0x424242,
+let world_geom = new THREE.SphereGeometry(1024, 64, 64);
+let word_mat = new THREE.MeshBasicMaterial({
   color: 0x000000,
-  //   map: worldTexture,
   side: THREE.BackSide,
 });
-var world = new THREE.Mesh(worldGeometry, worldMaterial);
+let world = new THREE.Mesh(world_geom, word_mat);
 scene.add(world);
-scene.add(moon);
 
-// Generate random points
-const pointCount = 1000;
-const positions = new Float32Array(pointCount * 3);
-for (let i = 0; i < pointCount; i++) {
-  positions[i * 3] = (Math.random() - 0.5) * 100; // x
-  positions[i * 3 + 1] = (Math.random() - 0.5) * 100; // y
-  positions[i * 3 + 2] = (Math.random() - 0.5) * 100; // z
-}
-
-// Create a geometry and add the positions
-const buf_geom = new THREE.BufferGeometry();
-buf_geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-// Create a material for the points
-const buf_material = new THREE.PointsMaterial({
+let moon_geom = new THREE.SphereGeometry(2, 60, 60);
+let textureLoader = new THREE.TextureLoader();
+let moon_texture = textureLoader.load(texture_url);
+let moon_mat = new THREE.MeshPhongMaterial({
   color: 0xffffff,
-  size: 0.0001,
+  map: moon_texture
 });
 
-// Create the points object
+let moon = new THREE.Mesh(moon_geom, moon_mat);
+scene.add(moon);
+
+const dir_light = new THREE.DirectionalLight(0xededed, 1);
+dir_light.position.set(-128, 16, 64);
+scene.add(dir_light);
+
+const point_n = 4096;
+const spread = 256;
+const positions = new Float32Array(point_n * 3);
+for (let i = 0; i < point_n; i++) {
+  positions[i * 3] = (Math.random() - 0.5) * spread;
+  positions[i * 3 + 1] = (Math.random() - 0.5) * spread;
+  positions[i * 3 + 2] = (Math.random() - 0.5) * spread;
+}
+
+const buf_geom = new THREE.BufferGeometry();
+buf_geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+const buf_material = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.0002,
+});
 const points = new THREE.Points(buf_geom, buf_material);
 scene.add(points);
-
-const duration = 4200; // Animation duration in milliseconds
-const startTime = Date.now();
-
-camera.position.z = 5;
 
 moon.rotation.x = 3.1415 * 0.02;
 moon.rotation.y = 3.1415 * 1.54;
 
-function easeOutCubic(t) {
+function ease_out_cubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
 
+const duration = 5000;
+const start = Date.now();
+
 function animate() {
   requestAnimationFrame(animate);
-  // Calculate the elapsed time
-  const elapsedTime = Date.now() - startTime;
-  const progress = Math.min(elapsedTime / duration, 1); // Clamp between 0 and 1
+  const dt = Date.now() - start;
+  const progress = Math.min(dt / duration, 1);
 
-  const scale = easeOutCubic(progress * 1);
-  moon.scale.set(scale, scale, scale);
+  const position = ease_out_cubic(1/(progress));
+  camera.position.z = position * 5
 
   moon.rotation.y += 0.0005;
   moon.rotation.x += 0.00002;
@@ -125,9 +97,7 @@ function animate() {
 }
 animate();
 
-// Call resize initially and on window resize
 resize();
 window.addEventListener("resize", resize);
 
-// Start the animation loop
 animate();
