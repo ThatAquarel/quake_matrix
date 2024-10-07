@@ -17,7 +17,7 @@ var camera = new THREE.PerspectiveCamera(
   1000
 );
 
-var renderer = new THREE.WebGLRenderer({antialias:true});
+var renderer = new THREE.WebGLRenderer({ antialias: true });
 
 var controls = new OrbitControls(camera, renderer.domElement);
 controls.enablePan = false;
@@ -94,7 +94,7 @@ const points = new THREE.Points(buf_geom, buf_material);
 scene.add(points);
 
 const duration = 4200; // Animation duration in milliseconds
-        const startTime = Date.now();
+const startTime = Date.now();
 
 camera.position.z = 5;
 
@@ -102,18 +102,17 @@ moon.rotation.x = 3.1415 * 0.02;
 moon.rotation.y = 3.1415 * 1.54;
 
 function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+  return 1 - Math.pow(1 - t, 3);
 }
 
 function animate() {
   requestAnimationFrame(animate);
-    // Calculate the elapsed time
-    const elapsedTime = Date.now() - startTime;
-    const progress = Math.min(elapsedTime / duration, 1); // Clamp between 0 and 1
+  // Calculate the elapsed time
+  const elapsedTime = Date.now() - startTime;
+  const progress = Math.min(elapsedTime / duration, 1); // Clamp between 0 and 1
 
-    const scale = easeOutCubic(progress * 1);
-    moon.scale.set(scale, scale, scale);
-
+  const scale = easeOutCubic(progress * 1);
+  moon.scale.set(scale, scale, scale);
 
   moon.rotation.y += 0.0005;
   moon.rotation.x += 0.00002;
