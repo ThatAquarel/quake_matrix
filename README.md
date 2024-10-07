@@ -133,7 +133,7 @@ Generated frequency-domain lunar seismic data using QuakeVAE using uniform rando
   <img src="./model/e_vae_infer_generated_lunar.png" alt="generated seismic data", width="85%"/>
 </p>
 
-Predictions of absence and presence of lunar quake event with QuakeCNN: **test accuracy 79%**.
+Predictions of absence and presence of lunar quake event with QuakeCNN: **test accuracy 88%**.
 
 <p align="center">
   <img src="./model/g_cnn_infer_predicted_lunar.png" alt="figure 2", width="85%"/>
