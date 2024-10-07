@@ -111,7 +111,7 @@ python model/d_vae_train.py
 python model/e_vae_infer.py
 ```
 
-4. Train the CNN (QuakeCNN) built from the AlexNet structure and test using real data. The learning rate, batch size and number of epochs is determined using **bayesian optimization**. You can try changing the hyperparameter space bounds to achieve a better accuracy, and the model definition. We use three `Conv2d` layers followed by `MaxPool2d` and `ReLU` activation. Cross entropy loss function is used for classfication of presence and absence of quake. We use Adam optimizer due to time constraints as SGD had too slow convergence rate.
+4. Train the CNN (QuakeCNN) built from the AlexNet structure and test using real data. The learning rate, batch size, and number of epochs are determined using Bayesian optimization. You can try changing the hyperparameter space bounds to achieve better accuracy and the model definition. We use three Conv2d layers, followed by MaxPool2d and ReLU activation. The cross-entropy loss function is used for classification of the presence and absence of a quake. We use Adam optimizer due to time constraints, as SGD had a too slow convergence rate.
 
 ```bash
 python model/f_cnn_train.py
