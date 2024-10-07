@@ -173,7 +173,7 @@ Due to time constraints, we could not apply the CNN for martian data and bandwid
 ### Contacts
 
 - [Tian Yi, Xia](https://github.com/ThatAquarel/space), xtxiatianyi@gmail.com: Machine learning models programmer (QuakeVAE and QuakeCNN), and data wrangling.
-- [Thomas, Deleuze-Bisson](https://github.com/Thomas4534): QuakeCNN structure, Bayesian implementation, text editing, writing and website building.
+- [Thomas, Deleuze-Bisson](https://github.com/Thomas4534), deleuzethomasbisson@gmail.com: QuakeCNN structure, Bayesian implementation, text editing, writing and website building.
 - [Mateo, Duque](https://github.com/MatTheGreat1/): Documentation, video-presentation and soft-skills.
 
 ### References
