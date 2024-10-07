@@ -118,7 +118,7 @@ python model/f_cnn_train.py
 python model/g_cnn_infer.py
 ```
 
-5. The totality of lunar seismic frequency domain data is transformed into `64x128` snapshots by **sliding window**. We apply QuakeCNN over each window and save the classification tensor. Depending on normalization techniques, the sensitivity of the model can be adjusted by remapping the frequency-domain seismic data into a range different than `[0, 1]`. A catalog of detected lunar seismic events is generated, and we visualize spectrogram against probability of quake as a function of time. We use threshold of $p_{quake} > 1e-13`$ given by QuakeCNN's softmax classfication output to determine the presence or absence of a quake. Modify to adjust model sensitifiy and false-positive rate.
+5. The totality of lunar seismic frequency domain data is transformed into 64x128 snapshots by sliding window. We apply QuakeCNN over each window and save the classification tensor. Depending on normalization techniques, the sensitivity of the model can be adjusted by remapping the frequency-domain seismic data into a range different than [0, 1]. A catalog of detected lunar seismic events is generated, and we visualize a spectrogram against the probability of a quake as a function of time. We use the threshold of pquake>1e−13‘ given by QuakeCNN's softmax classification output to determine the presence or absence of a quake. Modify to adjust model sensitivity and false-positive rate.
 
 ```bash
 python model/h_cnn_apply.py
