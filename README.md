@@ -22,8 +22,8 @@ Tian Yi Xia<sup>1</sup>, Thomas Deleuze-Bisson<sup>1</sup>, Mateo Duque<sup>1</s
 
 NASA Space Apps 2024:
 
-> Planetary seismology missions struggle with the power requirements necessary to send continuous seismic data back to Earth. But only a fraction of this data is scientifically useful! Instead of sending back all the data collected, what if we could program a lander to distinguish signals from noise, and send back only the data we care about? Your challenge is to write a computer program to analyze real data from the Apollo missions and the Mars InSight Lander to identify seismic quakes within the noise!
-
+> Planetary seismology missions struggle with the power requirements necessary to send continuous seismic data back to Earth. But only a fraction of this data is scientifically useful! Instead of sending back all the data collected, what if we could program a lander to distinguish signals from noise and send back only the data we care about? Your challenge is to write a computer program to analyze real data from the Apollo missions and the Mars InSight Lander to identify seismic quakes within the noise!
+> 
 ## Our Solution: VAEs and CNNs
 
 We propose **QuakeVAE**, a variational autoencoder as a dataset augmentation technique for frequency-domain lunar seismic data.
@@ -91,34 +91,34 @@ mkdir dataset/data
 
 ### Running the Scripts
 
-1. Run discrete fourier transform (DFT) over lunar and martian time series. You can modify the window size for the time-to-frequency domain transformation. The technical details of parsing the given `.csv` data from NASA Space Apps is abstracted here.
+1. Run discrete Fourier transform (DFT) over lunar and Martian time series. You can modify the window size for the time-to-frequency domain transformation. The technical details of parsing the given `.csv` data from NASA Space Apps are abstracted here.
 
 ```bash
 python model/a_generate_spectrogram.py
 python model/b_verify_spectrogram.py
 ```
 
-2. Generate known lunar seismic frequency domain data for training the variational autoencoder (VAE). We move the catalogs of existing earthquakes from `data/` to `dataset/`, and we drop `evid00029` - because its time was not synchronized.
+2. Generate known lunar seismic frequency domain data for training the variational autoencoder (VAE). We move the catalogs of existing earthquakes from `data/` to `dataset/`, and we drop `evid00029` because its time was not synchronized.
 
 ```bash
 python model/c_generate_catalog.py
 ```
 
-3. Train the VAE (QuakeVAE) and sample its latent space to generate more frequency-domain seismic data. We use **128 latent dimensions**. You can change the rest of the hyperparameters that compose the linear encoder-decoder structure to adjust intrinsic generated data properties. Each seismic frequency-domain data is fed in **2D snapshots (64x128)** of 0.0Hz to 1.5Hz (64 frequency bins) over ~1 hour 10 minutes (128 time steps of ~33 seconds each). We use a standard stochastic gradient descent (SGD) as optimizer, and a binary cross-entropy loss summed with KL-divergence (beta=100) as a loss function to encourage accurate data reconstruction.
+3. Train the VAE (QuakeVAE) and sample its latent space to generate more frequency-domain seismic data. We use 128 latent dimensions. You can change the rest of the hyperparameters that compose the linear encoder-decoder structure to adjust intrinsically generated data properties. Each seismic frequency-domain data is fed in 2D snapshots (64x128) of 0.0Hz to 1.5Hz (64 frequency bins) over ~1 hour 10 minutes (128 time steps of ~33 seconds each). We use a standard stochastic gradient descent (SGD) as an optimizer  and a binary cross-entropy loss summed with KL-divergence (beta = 100) as a loss function to encourage accurate data reconstruction.
 
 ```bash
 python model/d_vae_train.py
 python model/e_vae_infer.py
 ```
 
-4. Train the CNN (QuakeCNN) built from the AlexNet structure and test using real data. The learning rate, batch size and number of epochs is determined using **bayesian optimization**. You can try changing the hyperparameter space bounds to achieve a better accuracy, and the model definition. We use three `Conv2d` layers followed by `MaxPool2d` and `ReLU` activation. Cross entropy loss function is used for classfication of presence and absence of quake. We use Adam optimizer due to time constraints as SGD had too slow convergence rate.
+4. Train the CNN (QuakeCNN) built from the AlexNet structure and test using real data. The learning rate, batch size, and number of epochs are determined using Bayesian optimization. You can try changing the hyperparameter space bounds to achieve better accuracy and the model definition. We use three Conv2d layers, followed by MaxPool2d and ReLU activation. The cross-entropy loss function is used for classification of the presence and absence of a quake. We use Adam optimizer due to time constraints, as SGD had a too slow convergence rate.
 
 ```bash
 python model/f_cnn_train.py
 python model/g_cnn_infer.py
 ```
 
-5. The totality of lunar seismic frequency domain data is transformed into `64x128` snapshots by **sliding window**. We apply QuakeCNN over each window and save the classification tensor. Depending on normalization techniques, the sensitivity of the model can be adjusted by remapping the frequency-domain seismic data into a range different than `[0, 1]`. A catalog of detected lunar seismic events is generated, and we visualize spectrogram against probability of quake as a function of time. We use threshold of $p_{quake} > 1e-13`$ given by QuakeCNN's softmax classfication output to determine the presence or absence of a quake. Modify to adjust model sensitifiy and false-positive rate.
+5. The totality of lunar seismic frequency domain data is transformed into 64x128 snapshots by sliding window. We apply QuakeCNN over each window and save the classification tensor. Depending on normalization techniques, the sensitivity of the model can be adjusted by remapping the frequency-domain seismic data into a range different than [0, 1]. A catalog of detected lunar seismic events is generated, and we visualize a spectrogram against the probability of a quake as a function of time. We use the threshold of pquake>1e−13‘ given by QuakeCNN's softmax classification output to determine the presence or absence of a quake. Modify to adjust model sensitivity and false-positive rate.
 
 ```bash
 python model/h_cnn_apply.py
@@ -173,8 +173,8 @@ Due to time constraints, we could not apply the CNN for martian data and bandwid
 ### Contacts
 
 - [Tian Yi, Xia](https://github.com/ThatAquarel/space), xtxiatianyi@gmail.com: Machine learning models programmer (QuakeVAE and QuakeCNN), and data wrangling.
-- [Thomas, Deleuze-Bisson](https://github.com/Thomas4534), mateoduque31@hotmail.com: QuakeCNN structure and website building.
-- [Mateo, Duque](https://github.com/MatTheGreat1/): Documentation, video-presentation and soft-skills.
+- [Thomas, Deleuze-Bisson](https://github.com/Thomas4534), deleuzethomasbisson@gmail.com: QuakeCNN structure, Bayesian implementation, text editing, writing and website building.
+- [Mateo, Duque](https://github.com/MatTheGreat1/), mateoduque31@hotmail.com: Documentation, video-presentation and soft-skills.
 
 ### References
 
