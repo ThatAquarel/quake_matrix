@@ -177,3 +177,33 @@ Due to time constraints, we could not apply the CNN for martian data and bandwid
 - [Mateo, Duque](https://github.com/MatTheGreat1/): Documentation, video-presentation and soft-skills.
 
 ### References
+
+- Kingma, D. P., & Welling, M. (2022, December 10). Auto-Encoding Variational Bayes. *arXiv*. https://arxiv.org/abs/1312.6114
+ 
+- Indolia, S., Goswami, A. K., Mishra, S. P., & Asopa, P. (2018). Conceptual understanding of convolutional neural network: A deep learning approach. In *International Conference on Computational Intelligence and Data Science (ICCIDS 2018)* (pp. 1321-1327). Elsevier. https://doi.org/10.1016/j.procs.2018.04.196
+ 
+- Yamashita, R., Nishio, M., Do, R.K.G. et al. Convolutional neural networks: an overview and application in radiology. Insights Imaging 9, 611–629 (2018). https://doi.org/10.1007/s13244-018-0639-9
+
+- Zhou, H. W. (2014). Practical seismic data analysis. Cambridge University Press.
+ 
+- Luo, H., Men, Y., & Zheng, Q. Sparse Autoencoders with KL Divergence.
+ 
+- Li, Wenrui & Nakshatra, Fnu & Narvekar, Nitisha & Raut, Nitisha & Gao, Jerry. (2018). Seismic Data Classification Using Machine Learning. 10.1109/BigDataService.2018.00017.
+ 
+- Wu, J. (2017, May 1). *Introduction to convolutional neural networks*. LAMDA Group, National Key Lab for Novel Software Technology, Nanjing University
+ 
+- Haussler, D. (1999). Convolution kernels on discrete structures (Vol. 646). Technical report, Department of Computer Science, University of California at Santa Cruz.
+ 
+- Wei, X.-L., Zhang, C.-X., Kim, S.-W., Jing, K.-L., Wang, Y.-J., Xu, S., & Xie, Z.-Z. (2022). Seismic fault detection using convolutional neural networks with focal loss. *Computers & Geosciences, 158*, Article 104968. https://doi.org/10.1016/j.cageo.2021.104968
+ 
+- Chadebec, C., Allassonnière, S. (2021). Data Augmentation with Variational Autoencoders and Manifold Sampling. In: Engelhardt, S., et al. Deep Generative Models, and Data Augmentation, Labelling, and Imperfections. DGM4MICCAI DALI 2021 2021. Lecture Notes in Computer Science(), vol 13003. Springer, Cham. https://doi.org/10.1007/978-3-030-88210-5_17
+ 
+- Wu, J., Chen, X. Y., Zhang, H., Xiong, L. D., Lei, H., & Deng, S. H. (2019). Hyperparameter optimization for machine learning models based on Bayesian optimization. Journal of Electronic Science and Technology, 17(1), 26-40.
+ 
+- Wang, Y., Xu, C., You, S., Tao, D., & Xu, C. (2016). Cnnpack: Packing convolutional neural networks in the frequency domain. Advances in neural information processing systems, 29.
+ 
+- Islam, Z., Abdel-Aty, M., Cai, Q., & Yuan, J. (2021). Crash data augmentation using variational autoencoder. Accident Analysis & Prevention, 151, 105950.
+ 
+- Papadopoulos, D., & Karalis, V. D. (2023). Variational autoencoders for data augmentation in clinical studies. Applied Sciences, 13(15), 8793.
+ 
+- Karapanagiotis, C., Wosniok, A., Hicke, K., & Krebber, K. (2021). Time-efficient convolutional neural network-assisted Brillouin optical frequency domain analysis. Sensors, 21(8), 2724.
