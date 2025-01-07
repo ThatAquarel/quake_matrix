@@ -8,6 +8,8 @@
 
 [![Toolkit](https://skillicons.dev/icons?i=pytorch,python,d3)](icons)
 
+### [Project Video](https://www.youtube.com/watch?v=0vd83yGdgYQ&ab_channel=Aquarel)
+
 ## Authors
 
 A passionate team of college students from Montréal, Canada, who use their computers as makeshift room heaters to stay warm through the harsh Canadian winters. We're curious about the future of machine learning, and want to learn about this now ubiquitous tool.
